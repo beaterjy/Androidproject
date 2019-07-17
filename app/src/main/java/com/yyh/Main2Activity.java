@@ -12,6 +12,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.yyh.db.Organization;
+
 
 public class Main2Activity extends BaseActivity implements View.OnClickListener {
     private Button set;
@@ -63,6 +65,7 @@ public class Main2Activity extends BaseActivity implements View.OnClickListener 
 
         system =(Button) findViewById(R.id.system);
         system.setOnClickListener(this);
+
     }
 
     public void onClick(View v) {
