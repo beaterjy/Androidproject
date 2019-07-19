@@ -1,10 +1,14 @@
 package com.yyh;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,8 +35,12 @@ import com.iflytek.cloud.util.ResourceUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 
 public class collecting_fragement extends Fragment {
@@ -44,7 +52,8 @@ public class collecting_fragement extends Fragment {
     private  Button speakText;
     private TextView it_ask,itv_show,it_im;
     private static final String TAG = collecting_fragement.class .getSimpleName();
-
+    private SpeechRecognizer mIat;
+    private  String filename;
     private  Boolean isask=true;
     private  String name;
     private  String data;
@@ -77,6 +86,7 @@ public class collecting_fragement extends Fragment {
         try {
             data = getArguments().getString("data");
             name = getArguments().getString("name");
+            filename=data+"-"+name;
         }catch (Exception e){
           e.printStackTrace();
         }
@@ -112,7 +122,7 @@ public class collecting_fragement extends Fragment {
         end.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+            end();
             }
         });
         speakText=(Button)view.findViewById(R.id.speakText);
@@ -182,11 +192,61 @@ public class collecting_fragement extends Fragment {
     }
 
 
+//结束谈话
+private void end(){
+        //首先暂停监听
+        //首先判断是否打开了监听
+        if(mIat!=null) {
+            mIat.stopListening();
+        }
+        //首先弹出消息框让用户判断是否进行结束操作
+        AlertDialog.Builder makesure=new AlertDialog.Builder(getActivity());
+        makesure.setTitle("提示");
+        makesure.setMessage("是否结束本次谈话");
+        //首先设立确定按钮
+        makesure.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //然后就是把文件传输入新建的文件中
+               try {
+                   FileOutputStream fileOutputStream=new FileOutputStream(Environment.getExternalStorageDirectory() +
+                            "/msc/iat/" + name + "/" +filename + "笔录.txt");
+                    fileOutputStream.write(itv_show.getText().toString().getBytes());
+                    fileOutputStream.close();
+                    ShowTip("已保存到" +Environment.getExternalStorageDirectory() +
+                            "/msc/iat/" + name + "/" +filename + "笔录.txt" );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                    //切换到设置页面
+                    Setting_fragement setting_fragement=new Setting_fragement();
+                    FragmentTransaction fragmentTransaction=getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.right_layout,setting_fragement);
+                    fragmentTransaction.commit();
+
+
+
+            }
+        });
+        //设置取消按钮
+       makesure.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+           @Override
+           public void onClick(DialogInterface dialog, int which) {
+            ShowTip("本次操作取消");
+           }
+       });
+        //设置提示框不可返回消失
+    makesure.setCancelable(false).create();
+    //显示提示框
+    makesure.show();
+
+}
 
 
     private void speak(){
         //创建识别对象
-        SpeechRecognizer mIat=SpeechRecognizer.createRecognizer(getActivity(),null);
+         mIat=SpeechRecognizer.createRecognizer(getActivity(),null);
 
         //设置语音输入语言，zh_cn为简体中文
         mIat.setParameter(SpeechConstant.LANGUAGE, "zh_cn");
@@ -247,7 +307,9 @@ public class collecting_fragement extends Fragment {
                 }
                 it_ask.setTextColor(Color.RED);
                 it_ask.setText(resultBuffer.toString());
-                itv_show.append(it_ask.getText().toString()+"\n");//设置输入框的文本
+                if(b) {
+                    itv_show.append(it_ask.getText().toString()+"\n");//设置输入框的文本
+                }
         }
 
         @Override
