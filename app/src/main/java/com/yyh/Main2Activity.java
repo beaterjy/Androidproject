@@ -91,7 +91,7 @@ public class Main2Activity extends BaseActivity implements View.OnClickListener 
                 break;
 
             case R.id.manage:
-                replaceFragment(new Setting_fragement());
+                replaceFragment(new templateFragment());
                 break;
 
             case R.id.system:

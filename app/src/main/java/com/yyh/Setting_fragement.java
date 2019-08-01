@@ -141,7 +141,7 @@ public class Setting_fragement extends Fragment {
 
                   String filename=data+"-"+name;
 
-                 if(/*isFileExists(filename)*/true){
+                 if(isFileExists(name)){
                       //把数据存储到数据库
 
                     //设置可以切换
@@ -220,10 +220,11 @@ public class Setting_fragement extends Fragment {
 
 
     }
-    private boolean isFileExists(String filename){
+    //新建一个文件夹
+    private boolean isFileExists(String name){
         try {
             //存储的地址是
-            File f=new File(Environment.getExternalStorageDirectory() + "/msc/iat/"+filename);
+            File f=new File(Environment.getExternalStorageDirectory() + "/msc/iat/"+name);
             if(f.exists()&&f.isDirectory()){
                return  false;
             }else{
